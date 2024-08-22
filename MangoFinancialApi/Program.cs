@@ -8,7 +8,7 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddEndpointsApiExplorer();
+//
 //builder.Services.AddSwaggerGen();
 
     //Habilitamos CORS
@@ -34,6 +34,14 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     //Enable the use of CACHE, here activate the cache for all the endpoints
     builder.Services.AddOutputCache();
 
+    
+    builder.Services.AddEndpointsApiExplorer();
+
+
+    //Enable the swagger
+    builder.Services.AddSwaggerGen();
+
+
     //End of services area
 
 
@@ -41,6 +49,14 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     //Start area of middleware configuration
 
 
+    if(builder.Environment.IsDevelopment()){}
+
+
+    //Enable the use of swagger
+    app.UseSwagger();
+    app.UseSwaggerUI(); //Enable the use of swagger UI
+   
+    
     //Enable CORS
     app.UseCors();
 
