@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MangoFinancialApi", "MangoFinancialApi\MangoFinancialApi.csproj", "{A5986B89-C8CD-4DD4-A872-8222BFC0BA2A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{84EE3E57-1E62-40D7-A4FF-6D3009E802FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MangoDomain", "src\MangoDomain\MangoDomain.csproj", "{A5E6B7F3-17AB-4EEF-BC21-E5DF438D3BE7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5986B89-C8CD-4DD4-A872-8222BFC0BA2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5986B89-C8CD-4DD4-A872-8222BFC0BA2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5986B89-C8CD-4DD4-A872-8222BFC0BA2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5986B89-C8CD-4DD4-A872-8222BFC0BA2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5E6B7F3-17AB-4EEF-BC21-E5DF438D3BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5E6B7F3-17AB-4EEF-BC21-E5DF438D3BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5E6B7F3-17AB-4EEF-BC21-E5DF438D3BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5E6B7F3-17AB-4EEF-BC21-E5DF438D3BE7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A5E6B7F3-17AB-4EEF-BC21-E5DF438D3BE7} = {84EE3E57-1E62-40D7-A4FF-6D3009E802FB}
+	EndGlobalSection
+EndGlobal
