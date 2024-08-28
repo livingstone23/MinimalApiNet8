@@ -4,6 +4,7 @@ using MangoDomain.EntititesTest;
 using MangoFinancialApi.Dto;
 using MangoFinancialApi.Filters;
 using MangoFinancialApi.Repository;
+using MangoFinancialApi.Validations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -22,9 +23,11 @@ public static class GenderEnpoints
 
         //From expression lamda to method
         endpoints.MapGet("/", GetAllGenders).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("genders-get"));
-        endpoints.MapGet("/{id:int}",GetById).AddEndpointFilter<TestFilter>();
-        endpoints.MapPost("/", CreateGender);    
-        endpoints.MapPut("/{id:int}", UpdateGender);
+        endpoints.MapGet("/{id:int}",GetById);//.AddEndpointFilter<TestFilter>();
+        //endpoints.MapPost("/", CreateGender).AddEndpointFilter<GenderFilterValidation>();    
+        endpoints.MapPost("/", CreateGender).AddEndpointFilter<FilterValidation<CreateGenderDto>>();   //Using generic filter 
+        //endpoints.MapPut("/{id:int}", UpdateGender).AddEndpointFilter<GenderFilterValidation>(); 
+        endpoints.MapPut("/{id:int}", UpdateGender).AddEndpointFilter<FilterValidation<CreateGenderDto>>();  //Using generic filter 
         endpoints.MapDelete("/{id:int}",DeleteGender);
 
         /*
@@ -72,10 +75,12 @@ public static class GenderEnpoints
     static async Task<Results<Created<GenderDto>, ValidationProblem>> CreateGender (CreateGenderDto createGenderDto, 
                                                         IRepositoryGender repository, 
                                                         IOutputCacheStore outputCacheStore, 
-                                                        IMapper mapper,
-                                                        IValidator<CreateGenderDto> validator) 
+                                                        IMapper mapper
+                                                        //,IValidator<CreateGenderDto> validator
+                                                        ) 
     {
 
+        /*
         //Validate the data 
         var validationResult = await validator.ValidateAsync(createGenderDto);
 
@@ -83,6 +88,7 @@ public static class GenderEnpoints
         {
             return TypedResults.ValidationProblem(validationResult.ToDictionary()); 
         }
+        */
 
         var gender = mapper.Map<Gender>(createGenderDto);
 
@@ -100,11 +106,12 @@ public static class GenderEnpoints
                                                                 CreateGenderDto genderDto, 
                                                                 IRepositoryGender repository, 
                                                                 IOutputCacheStore outputCacheStore, 
-                                                                IMapper mapper,
-                                                                IValidator<CreateGenderDto> validator)
+                                                                IMapper mapper
+                                                                //,IValidator<CreateGenderDto> validator
+                                                                )
     {
 
-
+        /*
         //Validate the data 
         var validationResult = await validator.ValidateAsync(genderDto);
 
@@ -112,6 +119,7 @@ public static class GenderEnpoints
         {
             return TypedResults.ValidationProblem(validationResult.ToDictionary()); 
         }
+        */
 
 
         var exist = await repository.Exist(id);

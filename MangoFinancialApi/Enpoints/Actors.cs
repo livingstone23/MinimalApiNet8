@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentValidation;
 using MangoDomain.EntititesTest;
 using MangoFinancialApi.Dto;
+using MangoFinancialApi.Filters;
 using MangoFinancialApi.Repository;
 using MangoFinancialApi.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -25,8 +26,8 @@ public static class ActorEnpoints
         endpoints.MapGet("/", GetAllActors).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("actors-get"));
         endpoints.MapGet("/{id:int}",GetById);
         endpoints.MapGet("/getByName/{name}",GetByName);
-        endpoints.MapPost("/", CreateActor).DisableAntiforgery();    
-        endpoints.MapPut("/{id:int}", UpdateActor).DisableAntiforgery();
+        endpoints.MapPost("/", CreateActor).DisableAntiforgery().AddEndpointFilter<FilterValidation<CreateActorDto>>();    
+        endpoints.MapPut("/{id:int}", UpdateActor).DisableAntiforgery().AddEndpointFilter<FilterValidation<CreateActorDto>>(); 
         endpoints.MapDelete("/{id:int}",DeleteActor);
 
         return endpoints;
@@ -82,16 +83,19 @@ public static class ActorEnpoints
                                                         IRepositoryActor repository, 
                                                         IOutputCacheStore outputCacheStore, 
                                                         IMapper mapper, 
-                                                        IStoreFiles storeFiles,
-                                                        IValidator<CreateActorDto> validator) 
+                                                        IStoreFiles storeFiles
+                                                        //,IValidator<CreateActorDto> validator
+                                                        ) 
     {
 
+        /*
         var resultValidation = await validator.ValidateAsync(createActorDto);
 
         if (!resultValidation.IsValid)
         {
             return TypedResults.ValidationProblem(resultValidation.ToDictionary());
         }
+        */
 
         var actor = mapper.Map<Actor>(createActorDto);
 

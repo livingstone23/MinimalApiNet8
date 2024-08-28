@@ -1,6 +1,7 @@
 using AutoMapper;
 using MangoDomain.EntititesTest;
 using MangoFinancialApi.Dto;
+using MangoFinancialApi.Filters;
 using MangoFinancialApi.Repository;
 using MangoFinancialApi.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -26,8 +27,8 @@ public static class MovieEndpoints
         endpoints.MapGet("/", GetAllMovies).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("movies-get"));
         endpoints.MapGet("/{id:int}",GetById);
         endpoints.MapGet("/getByTitle/{title}",GetByTitle);
-        endpoints.MapPost("/", CreateMovie).DisableAntiforgery();    
-        endpoints.MapPut("/{id:int}", UpdateMovie).DisableAntiforgery();
+        endpoints.MapPost("/", CreateMovie).DisableAntiforgery().AddEndpointFilter<FilterValidation<MovieCreateDto>>();    
+        endpoints.MapPut("/{id:int}", UpdateMovie).DisableAntiforgery().AddEndpointFilter<FilterValidation<MovieCreateDto>>();
         endpoints.MapDelete("/{id:int}",DeleteMovie);
         endpoints.MapPost("/{id:int}/asignGenders",AsignGenders);
         endpoints.MapPost("/{id:int}/asignActors/",AsignActors);

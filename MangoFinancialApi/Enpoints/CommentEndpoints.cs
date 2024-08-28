@@ -1,6 +1,7 @@
 using AutoMapper;
 using MangoDomain.EntititesTest;
 using MangoFinancialApi.Dto;
+using MangoFinancialApi.Filters;
 using MangoFinancialApi.Repository;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,7 @@ public static class CommentEndpoints
 
         endpoints.MapGet("/", GetAllComments).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("comments-get").SetVaryByRouteValue(new string[] { "movieId" }));
         endpoints.MapGet("/{id:int}",GetCommentById);
-        endpoints.MapPost("/", CreateComment).DisableAntiforgery();    
+        endpoints.MapPost("/", CreateComment).AddEndpointFilter<FilterValidation<CommentCreateDto>>();
         endpoints.MapPut("/{id:int}", UpdateComment).DisableAntiforgery();
         endpoints.MapDelete("/{id:int}",DeleteComment);
 

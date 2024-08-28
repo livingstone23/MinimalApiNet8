@@ -67,6 +67,11 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     //Enable of fluent validation
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
     
+
+    //Enable the use of the exception handler, in this case we use the problem details. #PD1
+    builder.Services.AddProblemDetails();
+
+
     //End of services area
 
 
@@ -81,6 +86,12 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     app.UseSwagger();
     app.UseSwaggerUI(); //Enable the use of swagger UI
    
+
+    //Enable the use of the exception handler . #PD2
+    app.UseExceptionHandler();
+    //Enable the use of status code pages   . #PD3
+    app.UseStatusCodePages(); 
+
 
     app.UseStaticFiles(); //Enable the use of static files, for using StoreFilesLocal
     
