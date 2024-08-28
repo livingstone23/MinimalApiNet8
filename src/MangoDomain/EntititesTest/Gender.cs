@@ -18,4 +18,7 @@ public class Gender
     [StringLength(50)]
     public string Name { get; set; } = string.Empty;
 
+    public List<GenderMovie> GenderMovies { get; set; } = new List<GenderMovie>();
+
+
 }

@@ -7,16 +7,15 @@ namespace MangoDomain.EntititesTest;
 
 
 
-public class Actor
+public class Comment
 {
 
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    public string Name { get; set; } = null!;
-    public DateTime BirthDate { get; set; }
-    public string? PictureRoute { get; set; }
-
-    public List<ActorMovie> ActorMovies { get; set; } = new List<ActorMovie>();
-
+    
+    public string Content { get; set; } = null!;
+    
+    public int MovieId { get; set; }
+    
 }

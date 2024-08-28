@@ -1,8 +1,10 @@
 using System.Net.NetworkInformation;
+using FluentValidation;
 using MangoDomain.EntititesTest;
 using MangoFinancialApi.Data;
 using MangoFinancialApi.Enpoints;
 using MangoFinancialApi.Repository;
+using MangoFinancialApi.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
@@ -53,11 +55,18 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     //Add the services of the repository
     builder.Services.AddScoped<IRepositoryGender, RepositoryGender>();
     builder.Services.AddScoped<IRepositoryActor, RepositoryActor>();
+    builder.Services.AddScoped<IRepositoryMovie, RepositoryMovie>();
+    builder.Services.AddScoped<IRepositoryComment, RepositoryComment>();
+    //builder.Services.AddScoped<IStoreFiles, StoreFilesAzure>();
+    builder.Services.AddScoped<IStoreFiles, StoreFilesLocal>();
+    builder.Services.AddHttpContextAccessor(); //Enable the use of the http context, for using StoreFilesLocal and PaginationDTO
 
     //Enable the auto mapper
     builder.Services.AddAutoMapper(typeof(Program));
 
-
+    //Enable of fluent validation
+    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+    
     //End of services area
 
 
@@ -72,6 +81,8 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     app.UseSwagger();
     app.UseSwaggerUI(); //Enable the use of swagger UI
    
+
+    app.UseStaticFiles(); //Enable the use of static files, for using StoreFilesLocal
     
     //Enable CORS
     app.UseCors();
@@ -87,6 +98,10 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
 
     //Enable the class of Endpoints
     app.MapGroup("/genders").MapGenders();
+    app.MapGroup("/actors").MapActors();
+    app.MapGroup("/movies").MapMovies();
+    app.MapGroup("/movies/{movieId:int}/comments").MapComments();
+
 
     /*
 

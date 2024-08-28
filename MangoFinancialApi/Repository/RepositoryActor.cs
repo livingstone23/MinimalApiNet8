@@ -1,5 +1,9 @@
+using AutoMapper;
 using MangoDomain.EntititesTest;
 using MangoFinancialApi.Data;
+using MangoFinancialApi.Dto;
+using MangoFinancialApi.Utility;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -11,11 +15,16 @@ namespace MangoFinancialApi.Repository;
 public class RepositoryActor : IRepositoryActor
 {
 
+    
     private readonly ApplicationDbContext _context;
 
-    public RepositoryActor(ApplicationDbContext context)
+    private readonly HttpContext httpContext;
+
+    public RepositoryActor(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
+        httpContext = httpContextAccessor.HttpContext!;
+
     }
 
 
@@ -32,9 +41,12 @@ public class RepositoryActor : IRepositoryActor
         return true;
     }
 
-    public async Task<List<Actor>> GetAll()
+    public async Task<List<Actor>> GetAll(PaginationDTO pagination)
     {
-        return await _context.Actors.OrderBy(a => a.Name).ToListAsync();
+        var queryable = _context.Actors.AsQueryable();
+        await httpContext.InsertPaginationParametersInResponse(queryable);
+        var result = await queryable.OrderBy(a => a.Name).Paginate(pagination).ToListAsync();
+        return result;
     }
 
     public async Task<Actor?> GetById(int id)
@@ -42,10 +54,27 @@ public class RepositoryActor : IRepositoryActor
         return await _context.Actors.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
     }
 
-    public Task<bool> IsExists(int id)
+    public async Task<List<Actor>> GetByName(string name)
+    {
+        var result = await _context.Actors
+                                .Where(a => a.Name.Contains(name))
+                                .OrderBy(x=>x.Name)
+                                .ToListAsync();
+
+        return result;
+    }
+
+    public Task<bool> Exist(int id)
     {
         return _context.Actors.AnyAsync(a => a.Id == id);
     }
+
+    public async Task<List<int>> Exists(List<int> ids)
+    {
+        return await _context.Actors.Where(a => ids.Contains(a.Id)).Select(a => a.Id).ToListAsync();
+    }
+
+ 
 
     public async Task<Actor> Update(Actor actor)
     {
@@ -53,4 +82,11 @@ public class RepositoryActor : IRepositoryActor
         await _context.SaveChangesAsync();
         return actor;
     }
+
+
+    
+
+
+
+
 }

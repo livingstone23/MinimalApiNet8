@@ -1,11 +1,14 @@
 ﻿namespace MangoFinancialApi.Dto;
 
+
+
 public class CreateGenderDto
 {
 
     public string Name { get; set; } = null!;
 
 }
+
 
 
 public class GenderDto

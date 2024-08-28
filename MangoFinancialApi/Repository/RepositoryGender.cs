@@ -41,9 +41,32 @@ public class RepositoryGender : IRepositoryGender
 
     }
 
+    /// <summary>
+    /// Method for checking if the name already exists in the database
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public  async Task<bool> Exist(int id, string name)
+    {
+        
+        return await _context.Genders.AnyAsync(x => x.Id != id && x.Name == name);
+
+    }
+
+    public async Task<List<int>> Exists(List<int> ids)
+    {
+
+        return await _context.Genders.Where(g => ids.Contains(g.Id)).Select(g => g.Id).ToListAsync();
+
+    }
+
+
     public async Task<List<Gender>> GetAll()
     {
+    
         return await _context.Genders.OrderBy(x=>x.Name).ToListAsync();
+    
     }
 
     public async Task<Gender?> GetById(int id)

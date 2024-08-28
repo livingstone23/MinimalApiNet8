@@ -4,6 +4,7 @@ using MangoFinancialApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MangoFinancialApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240825135954_Comments")]
+    partial class Comments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,28 +48,6 @@ namespace MangoFinancialApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Actors");
-                });
-
-            modelBuilder.Entity("MangoDomain.EntititesTest.ActorMovie", b =>
-                {
-                    b.Property<int>("ActorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MovieId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Person")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ActorId", "MovieId");
-
-                    b.HasIndex("MovieId");
-
-                    b.ToTable("ActorMovies");
                 });
 
             modelBuilder.Entity("MangoDomain.EntititesTest.Comment", b =>
@@ -110,21 +91,6 @@ namespace MangoFinancialApi.Migrations
                     b.ToTable("Genders");
                 });
 
-            modelBuilder.Entity("MangoDomain.EntititesTest.GenderMovie", b =>
-                {
-                    b.Property<int>("GenderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MovieId")
-                        .HasColumnType("int");
-
-                    b.HasKey("GenderId", "MovieId");
-
-                    b.HasIndex("MovieId");
-
-                    b.ToTable("GenderMovies");
-                });
-
             modelBuilder.Entity("MangoDomain.EntititesTest.Movie", b =>
                 {
                     b.Property<int>("Id")
@@ -153,25 +119,6 @@ namespace MangoFinancialApi.Migrations
                     b.ToTable("Movies");
                 });
 
-            modelBuilder.Entity("MangoDomain.EntititesTest.ActorMovie", b =>
-                {
-                    b.HasOne("MangoDomain.EntititesTest.Actor", "Actor")
-                        .WithMany("ActorMovies")
-                        .HasForeignKey("ActorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MangoDomain.EntititesTest.Movie", "Movie")
-                        .WithMany("ActorMovies")
-                        .HasForeignKey("MovieId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Actor");
-
-                    b.Navigation("Movie");
-                });
-
             modelBuilder.Entity("MangoDomain.EntititesTest.Comment", b =>
                 {
                     b.HasOne("MangoDomain.EntititesTest.Movie", null)
@@ -181,42 +128,9 @@ namespace MangoFinancialApi.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MangoDomain.EntititesTest.GenderMovie", b =>
-                {
-                    b.HasOne("MangoDomain.EntititesTest.Gender", "Gender")
-                        .WithMany("GenderMovies")
-                        .HasForeignKey("GenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MangoDomain.EntititesTest.Movie", "Movie")
-                        .WithMany("GenderMovies")
-                        .HasForeignKey("MovieId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Gender");
-
-                    b.Navigation("Movie");
-                });
-
-            modelBuilder.Entity("MangoDomain.EntititesTest.Actor", b =>
-                {
-                    b.Navigation("ActorMovies");
-                });
-
-            modelBuilder.Entity("MangoDomain.EntititesTest.Gender", b =>
-                {
-                    b.Navigation("GenderMovies");
-                });
-
             modelBuilder.Entity("MangoDomain.EntititesTest.Movie", b =>
                 {
-                    b.Navigation("ActorMovies");
-
                     b.Navigation("Comments");
-
-                    b.Navigation("GenderMovies");
                 });
 #pragma warning restore 612, 618
         }
