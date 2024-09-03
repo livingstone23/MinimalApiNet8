@@ -8,6 +8,8 @@ public static class Utility
 
     public static string FirstLetterUpperCaseMessage = "The property {PropertyName} must have the first letter in uppercase";
 
+    public static string EmailMessage = "The property {PropertyName} must be a valid email address";
+
     public static string GreaterThanOrEqualToMessage(DateTime minDate)
     {
         return  "The property {PropertyName} must be greater than or equal to " + minDate.ToString("yyyy-MM-dd");

@@ -22,7 +22,9 @@ public static class GenderEnpoints
     {
 
         //From expression lamda to method
-        endpoints.MapGet("/", GetAllGenders).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("genders-get"));
+        endpoints.MapGet("/", GetAllGenders)
+            .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("genders-get"))
+            .RequireAuthorization();
         endpoints.MapGet("/{id:int}",GetById);//.AddEndpointFilter<TestFilter>();
         //endpoints.MapPost("/", CreateGender).AddEndpointFilter<GenderFilterValidation>();    
         endpoints.MapPost("/", CreateGender).AddEndpointFilter<FilterValidation<CreateGenderDto>>();   //Using generic filter 

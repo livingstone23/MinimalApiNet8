@@ -3,13 +3,17 @@ using FluentValidation;
 using MangoDomain.EntititesTest;
 using MangoFinancialApi.Data;
 using MangoFinancialApi.Enpoints;
+using MangoFinancialApi.Migrations;
 using MangoFinancialApi.Repository;
 using MangoFinancialApi.Services;
+using MangoFinancialApi.Utility;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,25 +25,39 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+    //Enable the use of identity in the context, with Library IdentityCore Microsoft.AspNetCore.Authentication.JwtBearer 8.0.8 
+    builder.Services.AddIdentityCore<IdentityUser>()
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders();
+
+    //Enable UserManager y Identity
+    //Reprensentation of the user of the application
+    //Enable the use of the user manager
+    builder.Services.AddScoped<UserManager<IdentityUser>>();
+    //Enable the use of the sign in manager, for the login
+    builder.Services.AddScoped<SignInManager<IdentityUser>>();
+
+
     //Habilitamos CORS
     builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(configuration =>
-    {
-        configuration.WithOrigins(origenPermited)
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+        {
+            options.AddDefaultPolicy(configuration =>
+            {
+                configuration.WithOrigins(origenPermited)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
 
-    //Add another politics
-    options.AddPolicy("free", configuration =>
-    {
-        configuration
-            .AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
+            //Add another politics
+            options.AddPolicy("free", configuration =>
+            {
+                configuration
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
 
     //Enable the use of CACHE, here activate the cache for all the endpoints
     builder.Services.AddOutputCache();
@@ -72,6 +90,23 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     builder.Services.AddProblemDetails();
 
 
+
+    //Enable the security in endpoints #SEC1
+    builder.Services.AddAuthentication().AddJwtBearer(opt =>                         //Install package Microsoft.AspNetCore.Authentication.JwtBearer 8.0.8 
+    opt.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,                                                 //Validate the issuer(emisor)
+        ValidateAudience = false,                                               //Validate the audience
+        ValidateLifetime = true,                                                //Validate the lifetime of the token
+        ValidateIssuerSigningKey = true,                                        //Validate the key of the issuer
+        IssuerSigningKey = Keys.GetKey(builder.Configuration).First(),        //Enable the use of one unique key
+        //IssuerSigningKeys = Keys.GetAllKeys(builder.Configuration),             //Enable the use of all keys
+        ClockSkew = TimeSpan.Zero                                               //The time of the clock
+    });
+
+    builder.Services.AddAuthorization();
+
+
     //End of services area
 
 
@@ -101,6 +136,11 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
 
     //Enable the use of CACHE
     app.UseOutputCache();
+
+
+    //Enable the security in endpoints #SEC2
+    app.UseAuthorization();
+    
     
 
     //Habilito en endpoint libre acceso
@@ -112,6 +152,7 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     app.MapGroup("/actors").MapActors();
     app.MapGroup("/movies").MapMovies();
     app.MapGroup("/movies/{movieId:int}/comments").MapComments();
+    app.MapGroup("/users").MapUsers();
 
 
     /*

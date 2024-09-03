@@ -1,4 +1,6 @@
 using MangoDomain.EntititesTest;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -7,7 +9,11 @@ namespace MangoFinancialApi.Data;
 
 
 
-public class ApplicationDbContext : DbContext
+/// <summary>
+/// Habilitamos paquete Microsoft.AspNetCore.Identity.EntityFrameworkCore para utilizar la
+/// IdentityDbContext
+/// </summary>
+public class ApplicationDbContext : IdentityDbContext //DbContext  
 {
 
 
@@ -39,6 +45,20 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<GenderMovie>().HasKey(x => new {x.GenderId, x.MovieId});
 
         modelBuilder.Entity<ActorMovie>().HasKey(x => new {x.ActorId, x.MovieId});
+
+
+        //It enable to personalize the name of the table Identity
+        //First installa the package Microsoft.AspNetCore.Identity.EntityFrameworkCore
+        modelBuilder.Entity<IdentityUser>().ToTable("Users");
+        modelBuilder.Entity<IdentityRole>().ToTable("Rols");
+        modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("RolsClaims");
+        modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("UsersClaims");
+        modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("UsersLogins");
+        modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UsersRols");
+        modelBuilder.Entity<IdentityUserToken<string>>().ToTable("UsersTokens");
+        
+
+
 
     }
 

@@ -39,6 +39,7 @@ public class StoreFilesLocal : IStoreFiles
 
     public  Task DeleteFileAsync(string? route, string container)
     {
+        
         if(string.IsNullOrEmpty(route))
         {
             return Task.CompletedTask;

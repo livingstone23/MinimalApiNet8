@@ -17,5 +17,9 @@ public class Comment
     public string Content { get; set; } = null!;
     
     public int MovieId { get; set; }
+
+    //public string UsuarioId { get; set; } = null!;
+
+    //public IdentityUser Usur { get; set; } = null!;
     
 }
