@@ -3,6 +3,7 @@ using MangoDomain.EntititesTest;
 using MangoFinancialApi.Dto;
 using MangoFinancialApi.Filters;
 using MangoFinancialApi.Repository;
+using MangoFinancialApi.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -32,6 +33,7 @@ public static class CommentEndpoints
                                                             IRepositoryComment repositoryComment, 
                                                             IRepositoryMovie repositoryMovie, 
                                                             IOutputCacheStore outputCacheStore, 
+                                                            IUserServices userServices,
                                                             IMapper mapper) 
     {
         if(! await repositoryMovie.Exist(movieId))
@@ -42,6 +44,8 @@ public static class CommentEndpoints
 
         var comment = mapper.Map<Comment>(commentCreateDto);
         comment.MovieId = movieId;
+
+        var user = await userServices.GetUser();
 
         var id = await repositoryComment.Create(comment);
        

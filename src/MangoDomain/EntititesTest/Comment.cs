@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 
 
@@ -18,8 +19,8 @@ public class Comment
     
     public int MovieId { get; set; }
 
-    //public string UsuarioId { get; set; } = null!;
+    public string UsuarioId { get; set; } = null!;
 
-    //public IdentityUser Usur { get; set; } = null!;
+    public IdentityUser Usur { get; set; } = null!;
     
 }

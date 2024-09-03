@@ -77,6 +77,8 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     builder.Services.AddScoped<IRepositoryComment, RepositoryComment>();
     //builder.Services.AddScoped<IStoreFiles, StoreFilesAzure>();
     builder.Services.AddScoped<IStoreFiles, StoreFilesLocal>();
+    builder.Services.AddTransient<IUserServices, UserServices>();
+    
     builder.Services.AddHttpContextAccessor(); //Enable the use of the http context, for using StoreFilesLocal and PaginationDTO
 
     //Enable the auto mapper
