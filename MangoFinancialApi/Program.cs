@@ -42,6 +42,7 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     //Habilitamos CORS
     builder.Services.AddCors(options =>
         {
+            
             options.AddDefaultPolicy(configuration =>
             {
                 configuration.WithOrigins(origenPermited)
@@ -94,7 +95,12 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
 
 
     //Enable the security in endpoints #SEC1
-    builder.Services.AddAuthentication().AddJwtBearer(opt =>                         //Install package Microsoft.AspNetCore.Authentication.JwtBearer 8.0.8 
+    builder.Services.AddAuthentication().AddJwtBearer(opt =>    
+    {
+
+    //Enable to get the claims of the token in the controller         
+    opt.MapInboundClaims = false;                //Install package Microsoft.AspNetCore.Authentication.JwtBearer 8.0.8 
+    
     opt.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,                                                 //Validate the issuer(emisor)
@@ -103,7 +109,8 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
         ValidateIssuerSigningKey = true,                                        //Validate the key of the issuer
         IssuerSigningKey = Keys.GetKey(builder.Configuration).First(),        //Enable the use of one unique key
         //IssuerSigningKeys = Keys.GetAllKeys(builder.Configuration),             //Enable the use of all keys
-        ClockSkew = TimeSpan.Zero                                               //The time of the clock
+        ClockSkew = TimeSpan.Zero   
+        };                                            //The time of the clock
     });
 
     builder.Services.AddAuthorization();

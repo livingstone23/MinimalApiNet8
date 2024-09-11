@@ -23,16 +23,16 @@ public static class CommentEndpoints
 
         endpoints.MapGet("/", GetAllComments).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("comments-get").SetVaryByRouteValue(new string[] { "movieId" }));
         endpoints.MapGet("/{id:int}",GetCommentById);
-        endpoints.MapPost("/", CreateComment).AddEndpointFilter<FilterValidation<CommentCreateDto>>();
-        endpoints.MapPut("/{id:int}", UpdateComment).DisableAntiforgery();
-        endpoints.MapDelete("/{id:int}",DeleteComment);
+        endpoints.MapPost("/", CreateComment).AddEndpointFilter<FilterValidation<CommentCreateDto>>().RequireAuthorization();
+        endpoints.MapPut("/{id:int}", UpdateComment).DisableAntiforgery().RequireAuthorization();
+        endpoints.MapDelete("/{id:int}",DeleteComment).RequireAuthorization();
 
         return endpoints;
 
     }
 
 
-    static async Task<Results<Created<CommentDto>, NotFound>> CreateComment (int movieId, 
+    static async Task<Results<Created<CommentDto>, NotFound, BadRequest<string>>> CreateComment (int movieId, 
                                                             CommentCreateDto commentCreateDto, 
                                                             IRepositoryComment repositoryComment, 
                                                             IRepositoryMovie repositoryMovie, 
@@ -50,6 +50,13 @@ public static class CommentEndpoints
         comment.MovieId = movieId;
 
         var user = await userServices.GetUser();
+
+        if(user is null)
+        {
+            return TypedResults.BadRequest("User not found");
+        }
+
+        comment.UsuarioId = user.Id;
 
         var id = await repositoryComment.Create(comment);
        
@@ -100,12 +107,14 @@ public static class CommentEndpoints
     }
 
 
-    static async Task<Results<NoContent,NotFound>> UpdateComment(int movieId, int id,
+    static async Task<Results<NoContent,NotFound, ForbidHttpResult>> UpdateComment(int movieId, int id,
                                                                 CommentCreateDto commentCreateDto, 
                                                                 IRepositoryComment repositoryComment, 
                                                                 IRepositoryMovie repositoryMovie, 
                                                                 IOutputCacheStore outputCacheStore, 
-                                                                IMapper mapper)
+                                                                IUserServices userServices
+                                                                //,IMapper mapper
+                                                                )
     {
 
         if(! await repositoryMovie.Exist(movieId))
@@ -113,17 +122,43 @@ public static class CommentEndpoints
             return TypedResults.NotFound();
         }
 
-        if(! await repositoryComment.Exist(id))
+        var commentBD = await repositoryComment.GetById(id);
+
+        if(commentBD is null)
         {
             return TypedResults.NotFound();
         }
 
-        var comment = mapper.Map<Comment>(commentCreateDto);
-        comment.Id = id;
-        comment.MovieId = movieId;
+        /*
+        if(! await repositoryComment.Exist(id))
+        {
+            return TypedResults.NotFound();
+        }
+        */
+
+        var user = await userServices.GetUser();
+
+        if(user is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        if(commentBD.UsuarioId != user.Id)
+        {
+            //return user not authorized
+            return TypedResults.Forbid();
+        }
+
+        commentBD.Content = commentCreateDto.Content;
 
 
-        await repositoryComment.Update(comment);
+        //var comment = mapper.Map<Comment>(commentCreateDto);
+        //comment.Id = id;
+        //comment.MovieId = movieId;
+
+
+
+        await repositoryComment.Update(commentBD);
 
         await outputCacheStore.EvictByTagAsync("comments-get",default);
 
@@ -131,10 +166,34 @@ public static class CommentEndpoints
 
     }
 
-    static async Task<Results<NoContent, NotFound>>  DeleteComment(int movieId, int id, 
+    static async Task<Results<NoContent, NotFound, ForbidHttpResult>>  DeleteComment(int movieId, int id, 
                                                                 IRepositoryComment repositoryComment, 
-                                                                IOutputCacheStore outputCacheStore) 
+                                                                IOutputCacheStore outputCacheStore
+                                                                ,IUserServices userServices
+                                                                ) 
     {
+
+        var commentBD = await repositoryComment.GetById(id);
+
+        if(commentBD is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var user = await userServices.GetUser();
+
+        if(user is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        if(commentBD.UsuarioId != user.Id)
+        {
+            //return user not authorized
+            return TypedResults.Forbid();
+        }
+
+
         if(! await repositoryComment.Exist(id))
         {
             return TypedResults.NotFound();
