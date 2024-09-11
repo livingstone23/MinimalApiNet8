@@ -18,6 +18,8 @@ public class UserServices: IUserServices
         _userManager = userManager;
     }
 
+    
+
 
     /// <summary>
     /// Get the email of the user from the claims
