@@ -113,7 +113,18 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
         };                                            //The time of the clock
     });
 
-    builder.Services.AddAuthorization();
+    //builder.Services.AddAuthorization();
+
+    //Enable a policy for the authorization
+    builder.Services.AddAuthorization(opt =>
+    {
+        //Require the claim isadmin
+        opt.AddPolicy("isadmin", policy => policy
+                .RequireClaim("isadmin"));
+    }
+
+
+    );
 
 
     //End of services area

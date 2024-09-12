@@ -26,9 +26,16 @@ public static class ActorEnpoints
         endpoints.MapGet("/", GetAllActors).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("actors-get"));
         endpoints.MapGet("/{id:int}",GetById);
         endpoints.MapGet("/getByName/{name}",GetByName);
-        endpoints.MapPost("/", CreateActor).DisableAntiforgery().AddEndpointFilter<FilterValidation<CreateActorDto>>();    
-        endpoints.MapPut("/{id:int}", UpdateActor).DisableAntiforgery().AddEndpointFilter<FilterValidation<CreateActorDto>>(); 
-        endpoints.MapDelete("/{id:int}",DeleteActor);
+        endpoints.MapPost("/", CreateActor)
+            .DisableAntiforgery()
+            .AddEndpointFilter<FilterValidation<CreateActorDto>>()
+            .RequireAuthorization("isadmin");       //Enable the security in endpoints #SEC2
+        endpoints.MapPut("/{id:int}", UpdateActor)
+            .DisableAntiforgery()
+            .AddEndpointFilter<FilterValidation<CreateActorDto>>()
+            .RequireAuthorization("isadmin");       //Enable the security in endpoints #SEC2
+        endpoints.MapDelete("/{id:int}",DeleteActor)
+            .RequireAuthorization("isadmin");       //Enable the security in endpoints #SEC2
 
         return endpoints;
     }
