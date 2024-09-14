@@ -5,9 +5,11 @@ using MangoFinancialApi.Dto;
 using MangoFinancialApi.Filters;
 using MangoFinancialApi.Repository;
 using MangoFinancialApi.Services;
+using MangoFinancialApi.Utility;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.OpenApi.Models;
 
 
 
@@ -23,13 +25,40 @@ public static class ActorEnpoints
     public static RouteGroupBuilder MapActors(this RouteGroupBuilder endpoints)
     {
 
-        endpoints.MapGet("/", GetAllActors).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("actors-get"));
+        endpoints.MapGet("/", GetAllActors)
+            .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("actors-get"))
+            /*.WithOpenApi(opt => 
+            {
+                opt.Parameters.Add(new OpenApiParameter
+                {
+                    Name = "page",
+                    In = ParameterLocation.Query,
+                    Required = false,
+                    Schema = new OpenApiSchema { Type = "integer" }
+                });
+                opt.Parameters.Add(new OpenApiParameter
+                {
+                    Name = "recordsPerPage",
+                    In = ParameterLocation.Query,
+                    Required = false,
+                    Schema = new OpenApiSchema { Type = "integer" }
+                });
+
+                return opt;
+            })*/
+            .AgregateParametersPaginationOpenAPI(); //Extend the OpenAPI documentation #SWAG1
+        
         endpoints.MapGet("/{id:int}",GetById);
         endpoints.MapGet("/getByName/{name}",GetByName);
         endpoints.MapPost("/", CreateActor)
             .DisableAntiforgery()
             .AddEndpointFilter<FilterValidation<CreateActorDto>>()
-            .RequireAuthorization("isadmin");       //Enable the security in endpoints #SEC2
+            .RequireAuthorization("isadmin")       //Enable the security in endpoints #SEC2
+            .WithOpenApi();
+
+
+
+
         endpoints.MapPut("/{id:int}", UpdateActor)
             .DisableAntiforgery()
             .AddEndpointFilter<FilterValidation<CreateActorDto>>()
@@ -41,10 +70,14 @@ public static class ActorEnpoints
     }
 
 
-    static async Task<Ok<List<ActorDto>>> GetAllActors(IRepositoryActor repository, IMapper mapper, int page = 1, int recordsPerPage = 10)
+    static async Task<Ok<List<ActorDto>>> GetAllActors(IRepositoryActor repository, 
+                                                        IMapper mapper, 
+                                                        //int page = 1, int recordsPerPage = 10
+                                                        PaginationDTO pagination
+                                                        )
     {
 
-        var pagination = new PaginationDTO { Page = page, RecordsPerPage = recordsPerPage };
+        //var pagination = new PaginationDTO { Page = page, RecordsPerPage = recordsPerPage };
 
         var actors = await repository.GetAll(pagination);
         

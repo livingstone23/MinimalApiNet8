@@ -4,6 +4,7 @@ using MangoFinancialApi.Data;
 using MangoFinancialApi.Dto;
 using MangoFinancialApi.Utility;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 
 
 
@@ -17,15 +18,18 @@ public class RepositoryMovie : IRepositoryMovie
     private readonly ApplicationDbContext _context;
     private readonly IMapper _mapper;
     private readonly HttpContext httpContext;
+    private readonly ILogger<RepositoryMovie> _logger;
 
 
     public RepositoryMovie(ApplicationDbContext context, 
                             IMapper mapper, 
-                            IHttpContextAccessor httpContextAccessor)
+                            IHttpContextAccessor httpContextAccessor,
+                            ILogger<RepositoryMovie> logger)
     {
         _context = context;
         _mapper = mapper;
         httpContext = httpContextAccessor.HttpContext!;
+        _logger = logger;
     }
 
     public async Task<List<Movie>> GetAll(PaginationDTO pagination)
@@ -140,5 +144,60 @@ public class RepositoryMovie : IRepositoryMovie
 
     }
 
+    public async  Task<List<Movie>> Filter(MovieFilterDTO filter)
+    {
+        
+        var moviesQueryable = _context.Movies.AsQueryable();
+
+        if(!string.IsNullOrEmpty(filter.Title))
+        {
+            moviesQueryable = moviesQueryable.Where(a => a.Title.Contains(filter.Title));
+        }
+
+        if(filter.InTheaters)
+        {
+            moviesQueryable = moviesQueryable.Where(a => a.InTheaters);
+        }
+
+        if(filter.UpcomingReleases)
+        {
+            var today = DateTime.Today;
+            moviesQueryable = moviesQueryable.Where(a => a.DateRelease > today);
+        }
+
+        if(filter.GenderId != 0)
+        {
+            moviesQueryable = moviesQueryable
+                                .Where(a => a.GenderMovies.Select(x => x.GenderId)
+                                .Contains(filter.GenderId));
+        }
+
+        //TODO: Here the section of order
+        if(!string.IsNullOrEmpty(filter.FieldOrder))
+        {
+            var typeOrder = filter.OrderAscending ? "ascending" : "descending";
+
+            try
+            {
+                // Title Ascending
+                moviesQueryable = moviesQueryable
+                                    .OrderBy($"{filter.FieldOrder} {typeOrder}");
+            }
+            catch(Exception ex)
+            {
+                //
+                _logger.LogError(ex.Message, ex);
+            }
+            
+        }
+
+        await httpContext.InsertPaginationParametersInResponse(moviesQueryable);
+
+
+        var movies = await moviesQueryable.Paginate(filter.Pagination).ToListAsync();
+
+        return movies;
+
+    }
 
 }

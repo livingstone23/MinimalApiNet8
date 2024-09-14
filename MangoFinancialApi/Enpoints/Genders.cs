@@ -25,11 +25,27 @@ public static class GenderEnpoints
         endpoints.MapGet("/", GetAllGenders)
             .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("genders-get"))
             .RequireAuthorization();
-        endpoints.MapGet("/{id:int}",GetById);//.AddEndpointFilter<TestFilter>();
+            
+        //endpoints.MapGet("/{id:int}",GetById);//.AddEndpointFilter<TestFilter>();
+
+        endpoints.MapGet("/{id:int}",GetById2);
+
         //endpoints.MapPost("/", CreateGender).AddEndpointFilter<GenderFilterValidation>();    
         endpoints.MapPost("/", CreateGender).AddEndpointFilter<FilterValidation<CreateGenderDto>>();   //Using generic filter 
         //endpoints.MapPut("/{id:int}", UpdateGender).AddEndpointFilter<GenderFilterValidation>(); 
-        endpoints.MapPut("/{id:int}", UpdateGender).AddEndpointFilter<FilterValidation<CreateGenderDto>>();  //Using generic filter 
+        
+        endpoints.MapPut("/{id:int}", UpdateGender)
+            .AddEndpointFilter<FilterValidation<CreateGenderDto>>()
+            .WithOpenApi(opt =>
+            {
+                opt.Summary = "Update a Gender";
+                opt.Description = "With this endpoint you can update the information of the Gender"; 
+                opt.Parameters[0].Description = "The id of a Gender to update";
+                opt.RequestBody.Description = "The information of Gender to update";
+                return opt;
+            });  //Using generic filter 
+        
+        
         endpoints.MapDelete("/{id:int}",DeleteGender);
 
         /*
@@ -48,8 +64,23 @@ public static class GenderEnpoints
 
 
     //From expression lamda to method
-    static async Task<Ok<List<GenderDto>>> GetAllGenders(IRepositoryGender repository, IMapper mapper)
+    static async Task<Ok<List<GenderDto>>> GetAllGenders(IRepositoryGender repository, IMapper mapper, ILoggerFactory loggerFactory)
     {
+        //Enable the logger
+        var type = typeof(GenderEnpoints);
+        var logger = loggerFactory.CreateLogger(type.FullName!);
+        logger.LogInformation("Getting the list of Genders");
+
+
+        logger.LogInformation("Getting the list of");
+        logger.LogTrace("This is a trace log");
+        logger.LogDebug("This is a debug log");
+        logger.LogWarning("This is a warning log");
+        logger.LogError("This is a error log");
+        logger.LogCritical("This is a critical log");
+
+
+
         var genders = await repository.GetAll();
         
         var gendersDto = mapper.Map<List<GenderDto>>(genders);
@@ -69,6 +100,28 @@ public static class GenderEnpoints
         }
 
         var genderDto = mapper.Map<GenderDto>(gender);
+
+        return TypedResults.Ok(genderDto);
+    }
+
+
+    /// <summary>
+    /// Method using the AsParameter
+    /// </summary>
+    /// <param name="repository"></param>
+    /// <param name="id"></param>
+    /// <param name="mapper"></param>
+    /// <returns></returns>
+    static async Task<Results<Ok<GenderDto>, NotFound>> GetById2([AsParameters]GetGenderByIdDTO model)
+    {
+        var gender = await model.Repository.GetById(model.Id);
+
+        if(gender is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var genderDto = model.Mapper.Map<GenderDto>(gender);
 
         return TypedResults.Ok(genderDto);
     }

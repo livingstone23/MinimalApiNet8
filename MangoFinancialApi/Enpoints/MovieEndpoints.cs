@@ -4,6 +4,7 @@ using MangoFinancialApi.Dto;
 using MangoFinancialApi.Filters;
 using MangoFinancialApi.Repository;
 using MangoFinancialApi.Services;
+using MangoFinancialApi.Utility;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -24,25 +25,40 @@ public static class MovieEndpoints
     public static RouteGroupBuilder MapMovies(this RouteGroupBuilder endpoints)
     {
 
-        endpoints.MapGet("/", GetAllMovies).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("movies-get"));
+        endpoints.MapGet("/", GetAllMovies)
+            .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60))
+            .Tag("movies-get"))
+            .AgregateParametersPaginationOpenAPI(); //Extend the OpenAPI documentation #SWAG1
+        
         endpoints.MapGet("/{id:int}",GetById);
         endpoints.MapGet("/getByTitle/{title}",GetByTitle);
-        endpoints.MapPost("/", CreateMovie).DisableAntiforgery().AddEndpointFilter<FilterValidation<MovieCreateDto>>();    
+        endpoints.MapPost("/", CreateMovie)
+            .DisableAntiforgery()
+            .AddEndpointFilter<FilterValidation<MovieCreateDto>>()
+            .WithOpenApi();    
+        
+        
         endpoints.MapPut("/{id:int}", UpdateMovie).DisableAntiforgery().AddEndpointFilter<FilterValidation<MovieCreateDto>>();
         endpoints.MapDelete("/{id:int}",DeleteMovie);
         endpoints.MapPost("/{id:int}/asignGenders",AsignGenders);
         endpoints.MapPost("/{id:int}/asignActors/",AsignActors);
 
+        endpoints.MapGet("/filter",FilterMovies).AgregateParametersMovieFilterOpenAPI(); //Extend the OpenAPI documentation #SWAG2
+
         return endpoints;
     }
 
 
-    static async Task<Ok<List<MovieDto>>> GetAllMovies(IRepositoryMovie repository, IMapper mapper, int page = 1, int recordsPerPage = 10)
+    static async Task<Ok<List<MovieDto>>> GetAllMovies(IRepositoryMovie repository, 
+                                                        IMapper mapper, 
+                                                        //int page = 1, int recordsPerPage = 10
+                                                        PaginationDTO pagination
+                                                        )
     {
 
-        var pagination = new PaginationDTO { Page = page, RecordsPerPage = recordsPerPage };
+        var newpagination = new PaginationDTO { Page = pagination.Page, RecordsPerPage = pagination.RecordsPerPage };
 
-        var movies = await repository.GetAll(pagination);
+        var movies = await repository.GetAll(newpagination);
         
         var moviesDtos = mapper.Map<List<MovieDto>>(movies);
 
@@ -240,6 +256,20 @@ public static class MovieEndpoints
         await repositoryMovie.AsignActors(id, actors);
 
         return TypedResults.NoContent();
+
+    }
+
+    static async Task<Ok<List<MovieDto>>> FilterMovies(MovieFilterDTO filter, 
+                                                        IRepositoryMovie repository, 
+                                                        IMapper mapper
+                                                        )
+    {
+
+        var movies = await repository.Filter(filter);
+
+        var moviesDtos = mapper.Map<List<MovieDto>>(movies);
+
+        return TypedResults.Ok(moviesDtos);
 
     }
     

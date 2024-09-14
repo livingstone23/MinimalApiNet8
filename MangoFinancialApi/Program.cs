@@ -3,9 +3,11 @@ using FluentValidation;
 using MangoDomain.EntititesTest;
 using MangoFinancialApi.Data;
 using MangoFinancialApi.Enpoints;
+using MangoFinancialApi.Graphql;
 using MangoFinancialApi.Migrations;
 using MangoFinancialApi.Repository;
 using MangoFinancialApi.Services;
+using MangoFinancialApi.Swagger;
 using MangoFinancialApi.Utility;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +28,16 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+    //Enable the use of the GraphQL step #1
+    builder.Services.AddGraphQLServer()
+        .AddQueryType<Query>()
+        .AddMutationType<Mutation>()
+        .AddAuthorization()
+        .AddProjections()
+        .AddFiltering()
+        .AddSorting();
+        
 
     //Enable the use of identity in the context, with Library IdentityCore Microsoft.AspNetCore.Authentication.JwtBearer 8.0.8 
     builder.Services.AddIdentityCore<IdentityUser>()
@@ -61,14 +74,74 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
         });
 
     //Enable the use of CACHE, here activate the cache for all the endpoints
-    builder.Services.AddOutputCache();
+    //Disable for using Reddis
+    //builder.Services.AddOutputCache();
+
+    //Enable Redis
+    builder.Services.AddStackExchangeRedisOutputCache(options =>
+    {
+        options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    });
 
     
     builder.Services.AddEndpointsApiExplorer();
 
 
     //Enable the swagger
-    builder.Services.AddSwaggerGen();
+    //builder.Services.AddSwaggerGen();
+
+    //Documenting the Swagger
+    builder.Services.AddSwaggerGen(c=> 
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo 
+                                { 
+                                    Title = "MangoFinancial Api", 
+                                    Version = "v1",
+                                    Description = "This is an educational API for implementing MinimalAPis",
+                                    Contact = new OpenApiContact
+                                    {
+                                        Name = "Livingstone Cano",
+                                        Email = "livingstone23@gmail.com",
+                                        Url = new Uri("https://www.linkedin.com/in/livingstone-cano-bravo-7aa79728/")
+                                    },
+                                    License = new OpenApiLicense
+                                    {
+                                        Name = "MIT License",
+                                        Url = new Uri("https://opensource.org/licenses/MIT")
+                                    } 
+                                });
+
+        //Enable the use of the security in the swagger #SEC1
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer",
+            In = ParameterLocation.Header,
+        });
+
+        //Enable the use of Extension of the swagger in class SwaggerExtensions
+        c.OperationFilter<FilterAuthorization>(); //Enable the use of the security in the swagger #SEC1
+
+        //Move this to the Extension of the swagger in class FilterAuthorization
+        /*
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] {}
+            }
+        });
+        */
+
+    });
 
 
     //Add the services of the repository
@@ -161,7 +234,8 @@ var origenPermited = builder.Configuration.GetValue<string>("origenPermited")!;
     //Enable the security in endpoints #SEC2
     app.UseAuthorization();
     
-    
+    //Enable the use of the GraphQL step #2
+    app.MapGraphQL();
 
     //Habilito en endpoint libre acceso
     app.MapGet("/", [EnableCors(policyName: "free")]() => "!Hello World!");

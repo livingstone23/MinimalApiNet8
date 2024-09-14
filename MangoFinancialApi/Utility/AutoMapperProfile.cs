@@ -15,7 +15,8 @@ public class AutoMapperProfiles : Profile
     {
         
         
-        CreateMap<CreateGenderDto, Gender>();    
+        CreateMap<CreateGenderDto, Gender>();
+        CreateMap<UpdateGenderDTO, Gender>();        
         CreateMap<Gender, GenderDto>();    
 
 

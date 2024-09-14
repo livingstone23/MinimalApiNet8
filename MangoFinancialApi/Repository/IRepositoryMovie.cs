@@ -27,5 +27,13 @@ public interface IRepositoryMovie
     Task AsignGender(int id, List<int> gendersId);
 
     Task AsignActors(int id, List<ActorMovie> actors);
+
+
+    /// <summary>
+    /// Method to apply filter and order to the movies
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    Task<List<Movie>> Filter(MovieFilterDTO filter);
     
 }
